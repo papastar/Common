@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="base_bg">#ffeeeeee</color>
+    <color name="base_msg_color">#ff999999</color>
+    <drawable name="progress_bar_bg">#80FFFFFF</drawable>
+    <color name="sr_color_primary">#3F51B5</color>
+</resources>

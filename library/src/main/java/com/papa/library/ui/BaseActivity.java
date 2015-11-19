@@ -23,6 +23,8 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 
 import com.papa.library.R;
+import com.papa.library.okhttp.callback.ResultCallback;
+import com.squareup.okhttp.Request;
 
 import butterknife.ButterKnife;
 
@@ -66,4 +68,18 @@ public abstract class BaseActivity extends BaseSwipeBackCompatActivity {
     }
 
     protected abstract boolean isSetStatusBarColor();
+
+
+    public abstract class DefaultResultCallback<T> extends ResultCallback<T> {
+
+        @Override
+        public void onBefore(Request request) {
+            super.onBefore(request);
+        }
+
+        @Override
+        public void onAfter() {
+            super.onAfter();
+        }
+    }
 }

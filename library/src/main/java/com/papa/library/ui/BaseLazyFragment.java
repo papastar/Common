@@ -74,7 +74,7 @@ public abstract class BaseLazyFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ButterKnife.inject(this, view);
+        ButterKnife.bind(this, view);
 
         if (null != getLoadingTargetView()) {
             mVaryViewHelperController = new VaryViewHelperController(getLoadingTargetView());
@@ -85,8 +85,9 @@ public abstract class BaseLazyFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        ButterKnife.reset(this);
+        ButterKnife.unbind(this);
     }
+
 
     @Override
     public void onDestroy() {

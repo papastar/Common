@@ -1,8 +1,13 @@
 package com.papa.common;
 
 import android.os.Bundle;
+import android.os.Environment;
+import android.text.TextUtils;
+import android.util.Pair;
 import android.view.View;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.orhanobut.logger.Logger;
 import com.papa.library.data.DatabaseManager;
 import com.papa.library.data.EventCenter;
@@ -14,6 +19,7 @@ import com.papa.library.sql.db.HotelDistrict;
 import com.papa.library.ui.BaseActivity;
 import com.squareup.okhttp.Request;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -29,24 +35,6 @@ import de.greenrobot.dao.async.AsyncOperationListener;
 public class MainActivity extends BaseActivity {
 
     private static final String APIKEY = "40287ae447680a6b0147680a6b580000";
-
-    public static Map<String, String> getCommonRequestParams() {
-        String timestamp = String.valueOf(Calendar.getInstance()
-                .getTimeInMillis());
-        Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put("version", "1.0.0");
-//        params.put("clientType", "ANDROID");
-//
-//
-//        params.put("signature", getSignature(params, timestamp));
-//        params.put("timestamp", timestamp);
-//        params.put("clientVersion","45");
-        params.put("version", "1");
-
-//        params.put(HttpConstant.KEY_CLIENT_VERSION,
-//                String.valueOf(getAppVersionCode(IApp.getIntance())));
-        return params;
-    }
 
     private static String getSignature(Map<String, String> params,
                                        String timestamp) {
@@ -78,6 +66,24 @@ public class MainActivity extends BaseActivity {
         return keyString.toString();
     }
 
+    private Map<String, String> getCommonRequestParams() {
+        String timestamp = String.valueOf(Calendar.getInstance()
+                .getTimeInMillis());
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        params.put("version", "1.0.0");
+        params.put("clientType", "ANDROID");
+        if (!TextUtils.isEmpty(getPreferences(MODE_PRIVATE).getString("token", "")))
+            params.put("token", getPreferences(MODE_PRIVATE).getString("token", ""));
+        params.put("signature", getSignature(params, timestamp));
+        params.put("timestamp", timestamp);
+        if (!TextUtils.isEmpty(getPreferences(MODE_PRIVATE).getString("userId", "")))
+            params.put("userId", getPreferences(MODE_PRIVATE).getString("userId", ""));
+        params.put("clientVersion", "45");
+//        params.put(HttpConstant.KEY_CLIENT_VERSION,
+//                String.valueOf(getAppVersionCode(IApp.getIntance())));
+        return params;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,20 +104,86 @@ public class MainActivity extends BaseActivity {
         new OkHttpRequest.Builder()
                 .url("http://hotel-app.teshehui.com/hotelGeoDataGet.action")
                 .params(getCommonRequestParams())
-                .tag(getClass().getName())
-                .post(new DefaultResultCallback<ResponseData>() {
+                .tag(this).post(new DefaultResultCallback<String>() {
+            @Override
+            public void onError(Request request, Exception e) {
+
+            }
+
+            @Override
+            public void onResponse(String response) {
+
+            }
+        });
+
+    }
+
+    @OnClick(R.id.login_btn)
+    public void login() {
+
+        Map<String, String> map = new LinkedHashMap<>();
+        map.putAll(getCommonRequestParams());
+        map.put("loginName", "13418459758");
+        map.put("password", "481471");
+
+        new OkHttpRequest.Builder()
+                .url("http://portal-web.teshehui.com/user/loginUser.action")
+                .params(map)
+                .tag(this)
+                .post(new DefaultResultCallback<String>() {
                     @Override
                     public void onError(Request request, Exception e) {
 
                     }
 
                     @Override
-                    public void onResponse(ResponseData response) {
-                        Logger.d("request success");
-                        saveDb(response);
+                    public void onResponse(String response) {
+                        Gson gson = new Gson();
+                        UserData data = gson.fromJson(response, UserData.class);
+                        getPreferences(MODE_PRIVATE).edit().putString("userId", data.data.userId)
+                                .putString("token", data.data.token).commit();
                     }
                 });
     }
+
+    @OnClick(R.id.upload_btn)
+    public void uploadImg() {
+
+        Map<String, String> map = new LinkedHashMap<>();
+        map.putAll(getCommonRequestParams());
+
+        File file = new File(Environment
+                .getExternalStorageDirectory(), "kebi.jpg");
+        if (!file.exists()) {
+            Toast.makeText(MainActivity.this, "文件不存在，请修改文件路径", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Pair<String, File> filePair = new Pair<String, File>("userHead", file);
+        new OkHttpRequest.Builder()
+                .url("http://portal-web.teshehui.com/file/userImageUpload.action")
+                .params(map)
+                .files(filePair)
+                .tag(this)
+                .upload(new DefaultResultCallback<String>() {
+                    @Override
+                    public void onError(Request request, Exception e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(String response) {
+
+                    }
+
+                    @Override
+                    public void inProgress(float progress) {
+                        super.inProgress(progress);
+                        Logger.d("upload progress:%s", progress);
+
+                    }
+                });
+    }
+
 
     @Override
     protected int getContentViewLayoutID() {

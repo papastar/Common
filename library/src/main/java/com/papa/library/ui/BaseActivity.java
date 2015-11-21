@@ -67,6 +67,11 @@ public abstract class BaseActivity extends BaseSwipeBackCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
     protected abstract boolean isSetStatusBarColor();
 
 

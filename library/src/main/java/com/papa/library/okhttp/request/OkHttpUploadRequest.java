@@ -1,6 +1,5 @@
 package com.papa.library.okhttp.request;
 
-import android.util.Log;
 import android.util.Pair;
 
 import com.squareup.okhttp.Headers;
@@ -21,9 +20,9 @@ public class OkHttpUploadRequest extends OkHttpPostRequest
     private Pair<String, File>[] files;
 
 
-    protected OkHttpUploadRequest(String url, String tag, Map<String, String> params, Map<String, String> headers, Pair<String, File>[] files)
+    protected OkHttpUploadRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers, Pair<String, File>[] files)
     {
-        super(url, tag, params, headers, null, null, null);
+        super(url, tag, params, headers, null, null, null, null);
         this.files = files;
     }
 
@@ -47,8 +46,9 @@ public class OkHttpUploadRequest extends OkHttpPostRequest
         {
             for (String key : params.keySet())
             {
-                builder.addPart(Headers.of("Content-Disposition", "form-data; name=\"" + key + "\""),
-                        RequestBody.create(null, params.get(key)));
+//                builder.addPart(Headers.of("Content-Disposition", "form-data; name=\"" + key + "\""),
+//                        RequestBody.create(null, params.get(key)));
+                builder.addFormDataPart(key,params.get(key));
 
             }
         }
@@ -71,9 +71,11 @@ public class OkHttpUploadRequest extends OkHttpPostRequest
                 File file = filePair.second;
                 String fileName = file.getName();
                 fileBody = RequestBody.create(MediaType.parse(guessMimeType(fileName)), file);
+                builder.addFormDataPart(fileKeyName,fileName,fileBody);
                 builder.addPart(Headers.of("Content-Disposition",
                                 "form-data; name=\"" + fileKeyName + "\"; filename=\"" + fileName + "\""),
                         fileBody);
+
             }
         }
 

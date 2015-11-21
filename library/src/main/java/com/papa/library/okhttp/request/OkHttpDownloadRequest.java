@@ -1,6 +1,5 @@
 package com.papa.library.okhttp.request;
 
-import com.orhanobut.logger.Logger;
 import com.papa.library.okhttp.OkHttpClientManager;
 import com.papa.library.okhttp.callback.ResultCallback;
 import com.squareup.okhttp.Call;
@@ -24,7 +23,7 @@ public class OkHttpDownloadRequest extends OkHttpGetRequest
 
 
     protected OkHttpDownloadRequest(
-            String url, String tag, Map<String,
+            String url, Object tag, Map<String,
             String> params, Map<String, String> headers,
             String destFileName, String destFileDir)
     {
@@ -91,7 +90,6 @@ public class OkHttpDownloadRequest extends OkHttpGetRequest
             final long total = response.body().contentLength();
             long sum = 0;
 
-            Logger.e(total + "");
 
             File dir = new File(destFileDir);
             if (!dir.exists())
